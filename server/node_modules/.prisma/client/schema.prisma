@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MenuItem {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  price        Float
+  imageUrl     String
+  category     String
+  isVegetarian Boolean  @default(false)
+  isVegan      Boolean  @default(false)
+  isGlutenFree Boolean  @default(false)
+  isPopular    Boolean  @default(false)
+  isAvailable  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Table {
+  id           Int           @id @default(autoincrement())
+  tableNumber  Int           @unique
+  capacity     Int
+  location     String        @default("Indoor")
+  createdAt    DateTime      @default(now())
+  reservations Reservation[]
+}
+
+model Reservation {
+  id              String            @id @default(cuid())
+  referenceNumber String            @unique
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  date            String
+  timeSlot        String
+  guestCount      Int
+  specialNotes    String?
+  status          ReservationStatus @default(CONFIRMED)
+  tableId         Int?
+  table           Table?            @relation(fields: [tableId], references: [id])
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
